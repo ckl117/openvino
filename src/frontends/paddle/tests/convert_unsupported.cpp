@@ -20,7 +20,7 @@ TEST(FrontEndConvertModelTest, test_unsupported_op) {
     ASSERT_NE(frontEnd, nullptr);
     // auto model_filename = FrontEndTestUtils::make_model_path(std::string(TEST_PADDLE_MODELS_DIRNAME) +
     //                                                          std::string("relu_unsupported/relu_unsupported.pdmodel"));
-    auto model_filename=FrontEndTestUtils::make_model_path("/workspace/cpu_anlysis/pnc_test/paddle_cpu/jl_vru/left_turn_vru_multipath_plus_model.pdmodel");
+    auto model_filename=FrontEndTestUtils::make_model_path("/workspace/cpu_anlysis/pnc_test/paddle_cpu/nj_oru/nojunction_adc_perspective_oru_8A.pdmodel");
     OV_ASSERT_NO_THROW(inputModel = frontEnd->load(model_filename));
     ASSERT_NE(inputModel, nullptr);
     std::shared_ptr<ov::Model> model;

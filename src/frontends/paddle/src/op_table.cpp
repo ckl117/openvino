@@ -142,6 +142,7 @@ OP_CONVERTER(abs);
 OP_CONVERTER(elu);
 OP_CONVERTER(atan2);
 OP_CONVERTER(scatter);
+OP_CONVERTER(eye);
 }  // namespace op
 std::map<std::string, CreatorFunction> get_supported_ops() {
     return {{"arg_max", op::argmax},
@@ -285,7 +286,8 @@ std::map<std::string, CreatorFunction> get_supported_ops() {
             {"abs",op::abs},
             {"elu",op::elu},
             {"atan2",op::atan2},
-            {"scatter",op::scatter}};
+            {"scatter",op::scatter},
+            {"eye", op::eye}};
 };
 
 }  // namespace paddle
