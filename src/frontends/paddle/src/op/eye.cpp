@@ -1,26 +1,35 @@
 // Copyright (C) 2018-2024 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
-#include "openvino/frontend/paddle/node_context.hpp"
+
 #include "default_opset.hpp"
-#include "openvino/opsets/opset6.hpp"
+#include "openvino/frontend/paddle/node_context.hpp"
 
 namespace ov {
 namespace frontend {
 namespace paddle {
 namespace op {
 NamedOutputs eye(const NodeContext& node) {
-    auto num_columns = node.get_attribute<int64_t>("num_columns");
-    auto num_rows = node.get_attribute<int64_t>("num_rows");
-    auto out_dtype = node.get_attribute<ov::element::Type>("dtype");
+    auto row = node.get_attribute<int64_t>("num_rows");
+    auto col = node.get_attribute<int64_t>("num_columns", row);
+    auto dtype = node.get_attribute<ov::element::Type>("dtype", ov::element::f32);
 
-    auto x=default_opset::Constant::create(element::i32, Shape{}, {static_cast<int32_t>(num_columns)});
-    auto y=default_opset::Constant::create(element::i32, Shape{}, {static_cast<int32_t>(num_rows)});
-    // eye support only main diagonal
-    auto diagonal = default_opset::Constant::create(element::i32, Shape{}, {0});
-    auto eye=std::make_shared<default_opset::Eye>(x,y,diagonal,ov::element::i32);
-    return node.default_single_output_mapping({std::make_shared<default_opset::Convert>(eye, out_dtype)}, {"Out"});
+    const auto& row_node = std::make_shared<default_opset::Constant>(ov::element::i64, Shape{}, (row));
+    const auto& col_node = std::make_shared<default_opset::Constant>(ov::element::i64, Shape{}, (col));
+    const auto& diagonal_index_node = std::make_shared<default_opset::Constant>(ov::element::i32, Shape{}, (0));
+
+    std::shared_ptr<Node> out_node;
+    if (dtype == ov::element::i32 || dtype == ov::element::i64) {
+        out_node = std::make_shared<default_opset::Eye>(row_node, col_node, diagonal_index_node, dtype);
+    } else {
+        const auto& eye_node =
+            std::make_shared<default_opset::Eye>(row_node, col_node, diagonal_index_node, ov::element::i32);
+        out_node = std::make_shared<default_opset::Convert>(eye_node, dtype);
+    }
+
+    return node.default_single_output_mapping({out_node}, {"Out"});
 }
+
 }  // namespace op
 }  // namespace paddle
 }  // namespace frontend
