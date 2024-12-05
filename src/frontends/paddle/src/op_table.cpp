@@ -39,9 +39,11 @@ OP_CONVERTER(elementwise_sub);
 OP_CONVERTER(equal);
 OP_CONVERTER(greater_equal);
 OP_CONVERTER(not_equal);
+OP_CONVERTER(elu);
 OP_CONVERTER(embedding);
 OP_CONVERTER(exp);
 OP_CONVERTER(expand_v2);
+OP_CONVERTER(eye);
 OP_CONVERTER(flip);
 OP_CONVERTER(flatten_contiguous_range);
 OP_CONVERTER(floor);
@@ -138,6 +140,12 @@ OP_CONVERTER(write_to_array);
 OP_CONVERTER(where_index);
 OP_CONVERTER(yolo_box);
 OP_CONVERTER(generate_proposals_v2);
+OP_CONVERTER(abs);
+OP_CONVERTER(elu);
+OP_CONVERTER(atan2);
+OP_CONVERTER(scatter);
+OP_CONVERTER(scatter_nd_add);
+OP_CONVERTER(take_along_axis);
 }  // namespace op
 std::map<std::string, CreatorFunction> get_supported_ops() {
     return {{"arg_max", op::argmax},
@@ -173,9 +181,11 @@ std::map<std::string, CreatorFunction> get_supported_ops() {
             {"elementwise_sub", op::elementwise_sub},
             {"dropout", op::dropout},
             {"elementwise_pow", op::elementwise_pow},
+            {"elu", op::elu},
             {"equal", op::equal},
             {"exp", op::exp},
             {"expand_v2", op::expand_v2},
+            {"eye", op::eye},
             {"fill_any_like", op::fill_any_like},
             {"fill_constant", op::fill_constant},
             {"fill_constant_batch_size_like", op::fill_constant_batch_size_like},
@@ -277,7 +287,13 @@ std::map<std::string, CreatorFunction> get_supported_ops() {
             {"while", op::while_},
             {"write_to_array", op::write_to_array},
             {"where_index", op::where_index},
-            {"yolo_box", op::yolo_box}};
+            {"yolo_box", op::yolo_box},
+            {"abs", op::abs},
+            {"elu", op::elu},
+            {"atan2", op::atan2},
+            {"scatter", op::scatter},
+            {"scatter_nd_add", op::scatter_nd_add},
+            {"take_along_axis", op::take_along_axis}};
 };
 
 }  // namespace paddle
