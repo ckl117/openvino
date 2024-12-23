@@ -14,7 +14,7 @@ NamedOutputs take_along_axis(const NodeContext& node) {
     auto index = node.get_input("Index");
     auto axis = node.get_attribute<int32_t>("Axis");
     return node.default_single_output_mapping({std::make_shared<default_opset::GatherElements>(input, index, axis)},
-                                              {"Out"});
+                                              {"Result"});
 }
 
 }  // namespace op
