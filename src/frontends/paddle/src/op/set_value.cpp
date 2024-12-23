@@ -56,7 +56,7 @@ NamedOutputs set_value(const NodeContext& node) {
     // auto input_shape = default_opset::Constant::create(element::i64, {input_shape_.size()}, input_shape_);
     auto input_shape = std::make_shared<default_opset::ShapeOf>(input_node);
 
-    Output<Node> starts_node, ends_node, steps_node, starts, ends, steps;
+    Output<Node> axes_node, spec_dim_node, starts_node, ends_node, steps_node, starts, ends, steps;
 
     // The following process is:
     // Given:
@@ -93,13 +93,22 @@ NamedOutputs set_value(const NodeContext& node) {
     // 7. Use `ScatterUpdate` update update_value into input_data.
     // 8. Reshape input to original input_shape.
 
-    const auto axes_node = default_opset::Constant::create(element::i64, {axes.size(), 1}, axes);
-    const auto spec_dim_node = std::make_shared<default_opset::GatherND>(input_shape, axes_node);
     const auto zero_node = default_opset::Constant::create(element::i64, Shape{}, {0});
     const auto one_node = default_opset::Constant::create(element::i64, Shape{}, {1});
     const auto dim_node = default_opset::Constant::create(element::i64, Shape{}, {dims});
     const auto reshape_flatten = default_opset::Constant::create(ov::element::i64, {1}, {-1});
     const auto slice_shape = default_opset::Constant::create(ov::element::i64, {1, 1}, {-1});
+    if (axes.size() > 1) {
+        axes_node = default_opset::Constant::create(element::i64, {axes.size(), 1}, axes);
+        spec_dim_node = std::make_shared<default_opset::GatherND>(input_shape, axes_node);
+    } else {
+        axes_node = default_opset::Constant::create(element::i64, {1}, axes);
+        spec_dim_node =
+            std::make_shared<default_opset::Gather>(input_shape,
+                                                    axes_node,
+                                                    ov::op::v0::Constant::create(ov::element::i64, ov::Shape{}, {0}));
+        axes_node = std::make_shared<default_opset::Unsqueeze>(axes_node, one_node);
+    }
 
     // get positive starts ends and steps
     if (node.has_input("StartsTensorList")) {
