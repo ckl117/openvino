@@ -7,6 +7,8 @@
 #include "default_opset.hpp"
 #include "op_utils.hpp"
 #include "openvino/frontend/paddle/node_context.hpp"
+#include "openvino/op/util/attr_types.hpp"
+#include "openvino/opsets/opset1.hpp"
 
 namespace ov {
 namespace frontend {
@@ -39,6 +41,8 @@ NamedOutputs set_value(const NodeContext& node) {
     PADDLE_OP_CHECK(node, (input_node.get_partial_shape().rank().is_static()), "rank must be static");
     const auto dims = static_cast<int64_t>(input_node.get_partial_shape().rank().get_length());
     auto axes = node.get_attribute<std::vector<int64_t>>("axes");
+    auto decrease_axes = node.get_attribute<std::vector<int64_t>>("decrease_axes");
+
     // const auto input_shape_ = input_node.get_partial_shape().get_shape();
     // auto input_shape = default_opset::Constant::create(element::i64, {input_shape_.size()}, input_shape_);
 
@@ -218,11 +222,17 @@ NamedOutputs set_value(const NodeContext& node) {
         std::make_shared<default_opset::ScatterNDUpdate>(input_shape, axes_node, value_shape_update_node);
 
     // 4.5 broadcast
+    const auto value_dims = static_cast<int64_t>(value_node.get_partial_shape().rank().get_length());
+    if (value_dims != dims && decrease_axes.size() > 0) {
+        value_node = std::make_shared<default_opset::Unsqueeze>(
+            value_node,
+            default_opset::Constant::create(element::i64, {decrease_axes.size()}, decrease_axes));
+    }
     auto value_shape = std::make_shared<default_opset::ShapeOf>(value_node);
     auto value_rank = std::make_shared<default_opset::ShapeOf>(value_shape);
     auto value_rank_scalar = std::make_shared<default_opset::Squeeze>(value_rank);
-    // Output<Node> broadcast_axes =
-    //     std::make_shared<default_opset::Range>(zero_node, value_rank_scalar, one_node, element::i64);
+    Output<Node> broadcast_axes =
+        std::make_shared<default_opset::Range>(zero_node, value_rank_scalar, one_node, element::i64);
     value_node = std::make_shared<default_opset::Broadcast>(value_node, value_target_shape);
 
     // get total number of elements

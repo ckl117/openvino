@@ -9,6 +9,7 @@ namespace paddle {
 namespace op {
 #define OP_CONVERTER(op) NamedOutputs op(const NodeContext& node)
 OP_CONVERTER(argmax);
+OP_CONVERTER(argmin);
 OP_CONVERTER(assign);
 OP_CONVERTER(assign_value);
 OP_CONVERTER(batch_norm);
@@ -152,6 +153,7 @@ OP_CONVERTER(reduce_any);
 }  // namespace op
 std::map<std::string, CreatorFunction> get_supported_ops() {
     return {{"arg_max", op::argmax},
+            {"arg_min", op::argmin},
             {"assign", op::assign},
             {"assign_value", op::assign_value},
             {"batch_norm", op::batch_norm},
